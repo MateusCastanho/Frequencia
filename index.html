@@ -73,7 +73,7 @@
                 </button>
             </div>
 
-            <!-- Área de Input do Modo Livre (Escondida inicialmente) -->
+            <!-- Área de Input do Modo Livre -->
             <div id="customInputArea" class="hidden mt-6 bg-slate-50 p-4 rounded-xl border border-slate-200 animate-fade-in">
                 <h3 class="font-bold text-slate-700 mb-3">Criar Conceito Personalizado</h3>
                 <div class="flex gap-2 mb-4">
@@ -94,20 +94,23 @@
 
         <!-- JOGO -->
         <div id="screenGame" class="hidden fade-in relative z-10">
-            <!-- CARTA -->
-            <div class="bg-white rounded-xl p-4 mb-2 border border-slate-200 flex justify-between items-center shadow-md relative overflow-hidden group">
-                <div class="absolute top-0 left-0 w-2 h-full bg-[#162e47]"></div>
-                
+            
+            <!-- BARRA DE CONTROLE (NOVA) -->
+            <div class="flex justify-between items-center mb-3 px-1">
                 <!-- Botão Pular Tema (Shuffle) -->
-                <button id="btnSkip" onclick="skipCard()" class="absolute top-2 left-2 text-slate-300 hover:text-[#162e47] transition-colors" title="Pular Tema">
-                    <i data-lucide="shuffle" class="w-4 h-4"></i>
+                <button id="btnSkip" onclick="skipCard()" class="text-slate-400 hover:text-[#162e47] transition-colors flex items-center gap-1 text-xs font-bold uppercase tracking-wider" title="Pular Tema">
+                    <i data-lucide="shuffle" class="w-4 h-4"></i> Aleatório
                 </button>
 
                 <!-- Botão Voltar ao Menu -->
-                <button onclick="resetToMenu()" class="absolute top-2 right-2 text-slate-300 hover:text-slate-500 transition-colors" title="Sair / Menu">
-                    <i data-lucide="x" class="w-4 h-4"></i>
+                <button onclick="resetToMenu()" class="text-slate-400 hover:text-red-500 transition-colors flex items-center gap-1 text-xs font-bold uppercase tracking-wider" title="Sair / Menu">
+                    Sair <i data-lucide="x" class="w-4 h-4"></i>
                 </button>
+            </div>
 
+            <!-- CARTA -->
+            <div class="bg-white rounded-xl p-4 mb-2 border border-slate-200 flex justify-between items-center shadow-md relative overflow-hidden group">
+                <div class="absolute top-0 left-0 w-2 h-full bg-[#162e47]"></div>
                 <div id="conceptLeft" class="text-lg md:text-2xl font-black text-slate-700 w-1/2 text-center border-r-2 border-dashed border-slate-200 pr-2 break-words">ESQUERDA</div>
                 <div id="conceptRight" class="text-lg md:text-2xl font-black text-slate-700 w-1/2 text-center pl-2 break-words">DIREITA</div>
             </div>
@@ -161,7 +164,16 @@
                     <div class="text-[#162e47] font-bold text-xs uppercase mb-2 flex items-center justify-center gap-2">
                         <i data-lucide="eye"></i> Visão do Médium
                     </div>
-                    <p class="text-slate-600 mb-4 text-sm">Memorize o alvo e dê sua dica.</p>
+                    <p class="text-slate-600 mb-2 text-sm">Memorize o alvo e dê sua dica.</p>
+                    
+                    <!-- Área de Dica/Ajuda -->
+                    <div id="tipContainer" class="mb-4 hidden text-xs bg-yellow-100 text-yellow-800 p-2 rounded border border-yellow-200 italic">
+                        💡 <span id="tipText"></span>
+                    </div>
+                    <button id="btnTip" onclick="showTip()" class="mb-4 text-xs text-slate-400 underline hover:text-[#162e47] flex items-center justify-center gap-1 w-full">
+                        <i data-lucide="lightbulb" class="w-3 h-3"></i> Sem ideias? Ver exemplo
+                    </button>
+
                     <button onclick="hideTarget()" class="w-full bg-[#162e47] hover:bg-[#2c3e50] text-white font-bold py-3 px-6 rounded-lg shadow-md flex justify-center gap-2">
                         <i data-lucide="eye-off"></i> Esconder Alvo
                     </button>
@@ -181,8 +193,9 @@
                     <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 flex flex-col items-center">
                         <div id="resultMessage" class="font-black text-xl mb-2"></div>
                         <div class="text-5xl font-black text-[#162e47] mb-4">+<span id="roundPoints">0</span></div>
+                        
                         <button id="btnNextAction" onclick="handleNextAction()" class="bg-[#162e47] hover:bg-[#2c3e50] text-white font-bold py-3 px-8 rounded-full shadow-lg flex justify-center gap-2">
-                            <!-- Ícone e texto serão definidos via JS -->
+                            <!-- JS preenche -->
                         </button>
                     </div>
                 </div>
@@ -191,14 +204,20 @@
     </main>
 
     <script>
-        // LISTA DE CARTAS COMPLETA
-        const CARDS = 
-            ['Essencial', 'Desnecessário'],
+        // --- BASE DE DADOS DE CARTAS ---
+        const RAW_CARDS = [
+            // CARTAS COM DICAS ESPECÍFICAS
+            { l: 'Solteiro', r: 'Namorando', tips: ['Ficando (Meio)', 'Amizade Colorida (Meio)', 'Casados há 50 anos (Dir)', 'Tinder instalado (Esq)'] },
+            { l: 'Essencial', r: 'Desnecessário', tips: ['Arroz e Feijão (Esq)', 'Guardanapo de pano (Meio)', 'Luz de LED no PC (Dir)'] },
+            { l: 'Herói', r: 'Vilão', tips: ['Homem-Aranha (Esq)', 'Loki (Meio)', 'Thanos (Dir)'] },
+            { l: 'Inútil no Apocalipse', r: 'Essencial no Apocalipse', tips: ['Influencer Digital (Esq)', 'Saber fazer fogo (Dir)', 'Baralho de cartas (Meio)'] },
+            { l: 'Feio', r: 'Bonito', tips: ['Pug (Depende de quem vê)', 'Boleto pago (Dir)', 'Unha encravada (Esq)'] },
+            { l: 'Barato', r: 'Caro', tips: ['Água da torneira (Esq)', 'iPhone (Dir)', 'Café de padaria (Meio)'] },
+            
+            // LISTA COMPLETA
             ['Muito Cringe', 'Descolado'],
             ['Filme Cult', 'Blockbuster'],
             ['Pior sensação do mundo', 'Melhor sensação do mundo'],
-            ['Herói', 'Vilão'],
-            ['Inútil no Apocalipse', 'Essencial no Apocalipse'],
             ['Comida de Rua', 'Alta Gastronomia'],
             ['Fácil de aprender', 'Impossível de dominar'],
             ['Pessoa Tímida', 'Alma da Festa'],
@@ -208,16 +227,12 @@
             ['Música Ruim', 'Hino Atemporal'],
             ['Passado', 'Futuro'],
             ['Racional', 'Emocional'],
-            ['Feio', 'Bonito'],
-            ['Barato', 'Caro'],
             ['Talento natural', 'Esforço puro'],
             ['Moda passageira', 'Clássico'],
             ['Irritante', 'Adorável'],
             ['Ficção', 'Realidade'],
             ['Saboroso', 'Saudável'],
             ['Segredo', 'Fofoca'],
-
-            // --- PERSONALIDADE & PESSOAS ---
             ['Gênio', 'Idiota'],
             ['Caótico', 'Organizado'],
             ['Introvertido', 'Extrovertido'],
@@ -248,8 +263,6 @@
             ['Inocente', 'Culpado'],
             ['Normal', 'Estranho'],
             ['Confiável', 'Suspeito'],
-
-            // --- CONCEITOS & OBJETOS ---
             ['Duro', 'Mole'],
             ['Seco', 'Molhado'],
             ['Quente', 'Frio'],
@@ -280,8 +293,6 @@
             ['Simples', 'Complexo'],
             ['Forte', 'Fraco'],
             ['Novo', 'Velho'],
-
-            // --- CULTURA POP & ENTRETENIMENTO ---
             ['Star Wars', 'Star Trek'],
             ['Marvel', 'DC'],
             ['Beatles', 'Rolling Stones'],
@@ -312,8 +323,6 @@
             ['Meme Velho', 'Meme Novo'],
             ['Textão', 'Vídeo Curto'],
             ['Twitter', 'Instagram'],
-
-            // --- COMIDA & BEBIDA ---
             ['Doce', 'Salgado'],
             ['Café', 'Chá'],
             ['Pizza', 'Hambúrguer'],
@@ -334,8 +343,6 @@
             ['Sopa é janta', 'Sopa não é janta'],
             ['Crocante', 'Borrachudo'],
             ['Amargo', 'Azedo'],
-
-            // --- SITUAÇÕES & VIBES ---
             ['Segunda-feira', 'Sexta-feira'],
             ['Natal', 'Carnaval'],
             ['Dia de Chuva', 'Dia de Sol'],
@@ -361,8 +368,6 @@
             ['Criança', 'Idoso'],
             ['Rico', 'Pobre'],
             ['Guerra', 'Paz'],
-
-            // --- ALEATÓRIO & SUBJETIVO (O "OURO" DO JOGO) ---
             ['Inofensivo', 'Mortal'],
             ['Normal ter 1', 'Estranho ter 100'],
             ['Parece comestível', 'É comestível'],
@@ -424,7 +429,8 @@
         let guessAngle = 90;
         let isDragging = false;
         let gameState = 'intro'; 
-        let currentMode = 'classic'; // Variável para controlar o modo atual
+        let currentMode = 'classic'; 
+        let currentCardTips = [];
 
         const needleGroup = document.getElementById('needleGroup');
         const touchArea = document.getElementById('touchArea');
@@ -433,6 +439,10 @@
         const scoreDisplay = document.getElementById('scoreDisplay');
         const customInputArea = document.getElementById('customInputArea');
         const btnSkip = document.getElementById('btnSkip');
+        const btnNextAction = document.getElementById('btnNextAction');
+        const tipContainer = document.getElementById('tipContainer');
+        const tipText = document.getElementById('tipText');
+        const btnTip = document.getElementById('btnTip');
 
         lucide.createIcons();
 
@@ -440,17 +450,27 @@
             customInputArea.classList.toggle('hidden');
         }
 
+        function getCardData(rawCard) {
+            if (Array.isArray(rawCard)) {
+                return { l: rawCard[0], r: rawCard[1], tips: [] };
+            }
+            return rawCard;
+        }
+
         function startGame(mode) {
-            currentMode = mode; // Salva o modo atual
+            currentMode = mode; 
 
             let leftText = "ESQUERDA";
             let rightText = "DIREITA";
+            currentCardTips = [];
 
             if (mode === 'classic') {
-                const card = CARDS[Math.floor(Math.random() * CARDS.length)];
-                leftText = card[0];
-                rightText = card[1];
-                btnSkip.classList.remove('hidden'); // Mostrar pular no modo clássico
+                const raw = RAW_CARDS[Math.floor(Math.random() * RAW_CARDS.length)];
+                const card = getCardData(raw);
+                leftText = card.l;
+                rightText = card.r;
+                currentCardTips = card.tips || [];
+                btnSkip.classList.remove('hidden'); 
             } else if (mode === 'custom') {
                 const cLeft = document.getElementById('customLeft').value.trim();
                 const cRight = document.getElementById('customRight').value.trim();
@@ -461,11 +481,22 @@
                 }
                 leftText = cLeft;
                 rightText = cRight;
-                btnSkip.classList.add('hidden'); // Esconder pular no modo custom (não faz sentido)
+                btnSkip.classList.add('hidden'); 
+                
+                document.getElementById('customLeft').value = "";
+                document.getElementById('customRight').value = "";
             }
 
             document.getElementById('conceptLeft').innerText = leftText;
             document.getElementById('conceptRight').innerText = rightText;
+
+            // Reset UI de Dicas
+            tipContainer.classList.add('hidden');
+            if (currentCardTips.length > 0 && mode === 'classic') {
+                btnTip.classList.remove('hidden');
+            } else {
+                btnTip.classList.add('hidden');
+            }
 
             // Sortear alvo
             targetAngle = Math.floor(Math.random() * 140) + 20;
@@ -473,38 +504,49 @@
             updateNeedleVisual();
             drawTargetZones(targetAngle);
 
-            // Mudar Tela
             document.getElementById('screenIntro').classList.add('hidden');
             document.getElementById('screenGame').classList.remove('hidden');
-            customInputArea.classList.add('hidden'); // Reset custom area visibility
+            customInputArea.classList.add('hidden'); 
             
             setGameState('medium');
         }
 
+        function showTip() {
+            if (currentCardTips.length > 0) {
+                const tip = currentCardTips[Math.floor(Math.random() * currentCardTips.length)];
+                tipText.innerText = tip;
+                tipContainer.classList.remove('hidden');
+            }
+        }
+
         function skipCard() {
             if (currentMode === 'classic') {
-                const card = CARDS[Math.floor(Math.random() * CARDS.length)];
-                document.getElementById('conceptLeft').innerText = card[0];
-                document.getElementById('conceptRight').innerText = card[1];
+                const raw = RAW_CARDS[Math.floor(Math.random() * RAW_CARDS.length)];
+                const card = getCardData(raw);
+                document.getElementById('conceptLeft').innerText = card.l;
+                document.getElementById('conceptRight').innerText = card.r;
+                currentCardTips = card.tips || [];
+                
+                tipContainer.classList.add('hidden');
+                if (currentCardTips.length > 0) {
+                    btnTip.classList.remove('hidden');
+                } else {
+                    btnTip.classList.add('hidden');
+                }
             }
         }
 
         function handleNextAction() {
             if (currentMode === 'classic') {
-                // Se for clássico, inicia nova rodada direto
                 startGame('classic');
             } else {
-                // Se for custom, volta pro menu para digitar novas palavras
                 resetToMenu();
             }
         }
 
         function resetToMenu() {
-            // Volta para o menu mantendo a pontuação
             document.getElementById('screenGame').classList.add('hidden');
             document.getElementById('screenIntro').classList.remove('hidden');
-            
-            // Limpa inputs do custom mode
             document.getElementById('customLeft').value = "";
             document.getElementById('customRight').value = "";
         }
@@ -520,14 +562,12 @@
                 coverGroup.style.transform = "scale(0)"; 
                 targetZones.classList.remove('opacity-0');
                 touchArea.style.pointerEvents = 'none'; 
-                // Habilitar botão de pular apenas aqui
                 if(currentMode === 'classic') btnSkip.classList.remove('hidden');
             } else if (state === 'guessing') {
                 document.getElementById('stateGuessing').classList.remove('hidden');
                 coverGroup.style.transform = "scale(1)"; 
                 targetZones.classList.add('opacity-0'); 
                 touchArea.style.pointerEvents = 'auto'; 
-                // Esconder botão de pular (já foi dada a dica)
                 btnSkip.classList.add('hidden');
             } else if (state === 'result') {
                 document.getElementById('stateResult').classList.remove('hidden');
@@ -567,14 +607,13 @@
             msgEl.innerText = msg;
             msgEl.className = `font-black text-xl mb-2 ${colorClass}`;
 
-            // Configura o botão de próxima ação baseado no modo
             const btn = document.getElementById('btnNextAction');
             if (currentMode === 'classic') {
                 btn.innerHTML = '<i data-lucide="refresh-cw"></i> Próxima Rodada';
             } else {
-                btn.innerHTML = '<i data-lucide="arrow-left"></i> Nova Palavra / Menu';
+                btn.innerHTML = '<i data-lucide="arrow-left"></i> Menu';
             }
-            lucide.createIcons(); // Recarrega os ícones inseridos dinamicamente
+            lucide.createIcons();
 
             setGameState('result');
         }
@@ -612,7 +651,6 @@
             updateNeedleVisual();
         }
 
-        // Mouse & Touch Events
         const startInput = (e) => {
             if (gameState !== 'guessing') return;
             isDragging = true;
@@ -633,14 +671,11 @@
 
         touchArea.addEventListener('mousedown', startInput);
         touchArea.addEventListener('touchstart', startInput, {passive: false});
-        
         window.addEventListener('mousemove', moveInput);
         window.addEventListener('touchmove', moveInput, {passive: false});
-        
         window.addEventListener('mouseup', endInput);
         window.addEventListener('touchend', endInput);
 
-        // SVG Helpers
         function polarToCartesian(cx, cy, r, angleDeg) {
             const angleRad = (angleDeg - 180) * Math.PI / 180.0;
             return {
