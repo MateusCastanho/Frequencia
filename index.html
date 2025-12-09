@@ -95,14 +95,12 @@
         <!-- JOGO -->
         <div id="screenGame" class="hidden fade-in relative z-10">
             
-            <!-- BARRA DE CONTROLE (NOVA) -->
+            <!-- BARRA DE CONTROLE -->
             <div class="flex justify-between items-center mb-3 px-1">
-                <!-- Botão Pular Tema (Shuffle) -->
                 <button id="btnSkip" onclick="skipCard()" class="text-slate-400 hover:text-[#162e47] transition-colors flex items-center gap-1 text-xs font-bold uppercase tracking-wider" title="Pular Tema">
                     <i data-lucide="shuffle" class="w-4 h-4"></i> Aleatório
                 </button>
 
-                <!-- Botão Voltar ao Menu -->
                 <button onclick="resetToMenu()" class="text-slate-400 hover:text-red-500 transition-colors flex items-center gap-1 text-xs font-bold uppercase tracking-wider" title="Sair / Menu">
                     Sair <i data-lucide="x" class="w-4 h-4"></i>
                 </button>
@@ -115,7 +113,7 @@
                 <div id="conceptRight" class="text-lg md:text-2xl font-black text-slate-700 w-1/2 text-center pl-2 break-words">DIREITA</div>
             </div>
 
-            <!-- MOSTRADOR - AUMENTADO O TAMANHO GERAL -->
+            <!-- MOSTRADOR -->
             <div class="relative w-full max-w-xl mx-auto aspect-[400/230] flex items-end justify-center no-select mt-4" id="dialContainer">
                 <svg viewBox="0 0 400 230" class="w-full h-full device-shadow overflow-visible">
                     <defs>
@@ -166,7 +164,7 @@
                     </div>
                     <p class="text-slate-600 mb-2 text-sm">Memorize o alvo e dê sua dica.</p>
                     
-                    <!-- Área de Dica/Ajuda -->
+                    <!-- Área de Dica -->
                     <div id="tipContainer" class="mb-4 hidden text-xs bg-yellow-100 text-yellow-800 p-2 rounded border border-yellow-200 italic">
                         💡 <span id="tipText"></span>
                     </div>
@@ -194,9 +192,28 @@
                         <div id="resultMessage" class="font-black text-xl mb-2"></div>
                         <div class="text-5xl font-black text-[#162e47] mb-4">+<span id="roundPoints">0</span></div>
                         
+                        <!-- Botão Principal (Modo Clássico) -->
                         <button id="btnNextAction" onclick="handleNextAction()" class="bg-[#162e47] hover:bg-[#2c3e50] text-white font-bold py-3 px-8 rounded-full shadow-lg flex justify-center gap-2">
                             <!-- JS preenche -->
                         </button>
+
+                        <!-- Input para Próxima Rodada (Modo Livre) -->
+                        <div id="resultCustomInputArea" class="hidden w-full mt-2 pt-4 border-t border-slate-200">
+                            <p class="text-xs text-slate-500 mb-2 font-bold uppercase tracking-wider">Próxima Rodada</p>
+                            <div class="flex gap-2 mb-3">
+                                <input id="nextCustomLeft" type="text" placeholder="Ex: Frio" class="w-1/2 p-3 rounded-lg border border-slate-300 text-center text-sm font-bold text-slate-700 focus:outline-none focus:border-[#162e47] shadow-sm">
+                                <input id="nextCustomRight" type="text" placeholder="Ex: Quente" class="w-1/2 p-3 rounded-lg border border-slate-300 text-center text-sm font-bold text-slate-700 focus:outline-none focus:border-[#162e47] shadow-sm">
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="resetToMenu()" class="w-1/3 bg-slate-200 hover:bg-slate-300 text-slate-600 font-bold py-3 rounded-lg text-sm transition-colors">
+                                    Menu
+                                </button>
+                                <button onclick="startNextCustomRound()" class="w-2/3 bg-[#162e47] hover:bg-[#2c3e50] text-white font-bold py-3 rounded-lg shadow-md text-sm flex items-center justify-center gap-2 transition-colors">
+                                    Jogar <i data-lucide="play" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -204,9 +221,7 @@
     </main>
 
     <script>
-        // --- BASE DE DADOS DE CARTAS ---
         const RAW_CARDS = [
-            // CARTAS COM DICAS ESPECÍFICAS
             { l: 'Solteiro', r: 'Namorando', tips: ['Ficando (Meio)', 'Amizade Colorida (Meio)', 'Casados há 50 anos (Dir)', 'Tinder instalado (Esq)'] },
             { l: 'Essencial', r: 'Desnecessário', tips: ['Arroz e Feijão (Esq)', 'Guardanapo de pano (Meio)', 'Luz de LED no PC (Dir)'] },
             { l: 'Herói', r: 'Vilão', tips: ['Homem-Aranha (Esq)', 'Loki (Meio)', 'Thanos (Dir)'] },
@@ -214,214 +229,57 @@
             { l: 'Feio', r: 'Bonito', tips: ['Pug (Depende de quem vê)', 'Boleto pago (Dir)', 'Unha encravada (Esq)'] },
             { l: 'Barato', r: 'Caro', tips: ['Água da torneira (Esq)', 'iPhone (Dir)', 'Café de padaria (Meio)'] },
             
-            // LISTA COMPLETA
-            ['Muito Cringe', 'Descolado'],
-            ['Filme Cult', 'Blockbuster'],
-            ['Pior sensação do mundo', 'Melhor sensação do mundo'],
-            ['Comida de Rua', 'Alta Gastronomia'],
-            ['Fácil de aprender', 'Impossível de dominar'],
-            ['Pessoa Tímida', 'Alma da Festa'],
-            ['Superestimado', 'Subestimado'],
-            ['Trabalho', 'Hobby'],
-            ['Mentira reconfortante', 'Verdade dolorosa'],
-            ['Música Ruim', 'Hino Atemporal'],
-            ['Passado', 'Futuro'],
-            ['Racional', 'Emocional'],
-            ['Talento natural', 'Esforço puro'],
-            ['Moda passageira', 'Clássico'],
-            ['Irritante', 'Adorável'],
-            ['Ficção', 'Realidade'],
-            ['Saboroso', 'Saudável'],
-            ['Segredo', 'Fofoca'],
-            ['Gênio', 'Idiota'],
-            ['Caótico', 'Organizado'],
-            ['Introvertido', 'Extrovertido'],
-            ['Líder', 'Seguidor'],
-            ['Otimista', 'Pessimista'],
-            ['Egoísta', 'Altruísta'],
-            ['Coração', 'Cérebro'],
-            ['Ingênuo', 'Malicioso'],
-            ['Preguiçoso', 'Workaholic'],
-            ['Humilde', 'Arrogante'],
-            ['Corajoso', 'Covarde'],
-            ['Conservador', 'Liberal'],
-            ['Hipster', 'Mainstream'],
-            ['Nerd', 'Popular'],
-            ['Matutino', 'Noturno'],
-            ['Gosta de Gatos', 'Gosta de Cachorros'],
-            ['Paciente', 'Impulsivo'],
-            ['Idealista', 'Realista'],
-            ['Espiritualizado', 'Cético'],
-            ['Minimalista', 'Acumulador'],
-            ['Aventureiro', 'Caseiro'],
-            ['Independente', 'Carente'],
-            ['Pontual', 'Sempre atrasado'],
-            ['Sincero', 'Falso'],
-            ['Engraçado', 'Sério'],
-            ['Romântico', 'Prático'],
-            ['Sedutor', 'Assustador'],
-            ['Inocente', 'Culpado'],
-            ['Normal', 'Estranho'],
-            ['Confiável', 'Suspeito'],
-            ['Duro', 'Mole'],
-            ['Seco', 'Molhado'],
-            ['Quente', 'Frio'],
-            ['Áspero', 'Liso'],
-            ['Redondo', 'Quadrado'],
-            ['Pesado', 'Leve'],
-            ['Temporário', 'Permanente'],
-            ['Finito', 'Infinito'],
-            ['Analógico', 'Digital'],
-            ['Manual', 'Automático'],
-            ['Rústico', 'Futurista'],
-            ['Sintético', 'Orgânico'],
-            ['Colorido', 'Preto e Branco'],
-            ['Silencioso', 'Barulhento'],
-            ['Frágil', 'Indestrutível'],
-            ['Transparente', 'Opaco'],
-            ['Rápido', 'Lento'],
-            ['Afiado', 'Cego'],
-            ['Brilhante', 'Fosco'],
-            ['Sólido', 'Líquido'],
-            ['Puro', 'Misturado'],
-            ['Vazio', 'Cheio'],
-            ['Apertado', 'Folgado'],
-            ['Limpo', 'Sujo'],
-            ['Arrumado', 'Bagunçado'],
-            ['Claro', 'Escuro'],
-            ['Reto', 'Curvo'],
-            ['Simples', 'Complexo'],
-            ['Forte', 'Fraco'],
-            ['Novo', 'Velho'],
-            ['Star Wars', 'Star Trek'],
-            ['Marvel', 'DC'],
-            ['Beatles', 'Rolling Stones'],
-            ['Livro', 'Filme'],
-            ['Série', 'Novela'],
-            ['Comédia', 'Drama'],
-            ['Terror', 'Romance'],
-            ['Pop', 'Rock'],
-            ['Anos 80', 'Anos 2020'],
-            ['Youtube', 'TikTok'],
-            ['Playstation', 'Xbox'],
-            ['PC Gamer', 'Console'],
-            ['Dublado', 'Legendado'],
-            ['Herói de Ação', 'Protagonista Dramático'],
-            ['Vilão Simpático', 'Vilão Odioso'],
-            ['Final Feliz', 'Final Triste'],
-            ['Spoilers', 'Surpresa'],
-            ['Original', 'Remake'],
-            ['Avatar (Filme)', 'Avatar (Anime)'],
-            ['Disney', 'Pixar'],
-            ['Harry Potter', 'Senhor dos Anéis'],
-            ['Funk', 'Sertanejo'],
-            ['Indie', 'Comercial'],
-            ['Single', 'Álbum Completo'],
-            ['Ao vivo', 'Estúdio'],
-            ['Reality Show', 'Documentário'],
-            ['Influencer', 'Celebridade Real'],
-            ['Meme Velho', 'Meme Novo'],
-            ['Textão', 'Vídeo Curto'],
-            ['Twitter', 'Instagram'],
-            ['Doce', 'Salgado'],
-            ['Café', 'Chá'],
-            ['Pizza', 'Hambúrguer'],
-            ['Cerveja', 'Vinho'],
-            ['Chocolate', 'Baunilha'],
-            ['Cru', 'Bem Passado'],
-            ['Apimentado', 'Suave'],
-            ['Vegano', 'Carnívoro'],
-            ['Caseiro', 'Industrializado'],
-            ['Gourmet', 'Podrão'],
-            ['Café da Manhã', 'Jantar'],
-            ['Comer com a mão', 'Usar talheres'],
-            ['Borda Recheada', 'Sem Borda'],
-            ['Coca-Cola', 'Pepsi'],
-            ['Nutella', 'Raiz'],
-            ['Fruta', 'Vegetal'],
-            ['Quente', 'Gelado'],
-            ['Sopa é janta', 'Sopa não é janta'],
-            ['Crocante', 'Borrachudo'],
-            ['Amargo', 'Azedo'],
-            ['Segunda-feira', 'Sexta-feira'],
-            ['Natal', 'Carnaval'],
-            ['Dia de Chuva', 'Dia de Sol'],
-            ['Praia', 'Montanha'],
-            ['Cidade', 'Campo'],
-            ['Inverno', 'Verão'],
-            ['Banho Gelado', 'Banho Quente'],
-            ['Acordar Cedo', 'Dormir Tarde'],
-            ['Trânsito', 'Estrada Livre'],
-            ['Festa', 'Netflix'],
-            ['Casamento', 'Divórcio'],
-            ['Primeiro Encontro', 'Término'],
-            ['Escola', 'Faculdade'],
-            ['Chefe', 'Estagiário'],
-            ['Home Office', 'Presencial'],
-            ['Avião', 'Navio'],
-            ['Hotel', 'Camping'],
-            ['Museu', 'Parque de Diversões'],
-            ['Shopping', 'Parque'],
-            ['Elevador', 'Escada'],
-            ['Sofá', 'Cama'],
-            ['Solteiro', 'Namorando'],
-            ['Criança', 'Idoso'],
-            ['Rico', 'Pobre'],
-            ['Guerra', 'Paz'],
-            ['Inofensivo', 'Mortal'],
-            ['Normal ter 1', 'Estranho ter 100'],
-            ['Parece comestível', 'É comestível'],
-            ['Acontece em filme', 'Acontece na vida real'],
-            ['Batman', 'Coringa'],
-            ['Legal', 'Ilegal'],
-            ['Ético', 'Imoral'],
-            ['Justo', 'Injusto'],
-            ['Ciência', 'Fé'],
-            ['Sorte', 'Habilidade'],
-            ['Utopia', 'Distopia'],
-            ['Sonho', 'Pesadelo'],
-            ['Paraíso', 'Inferno'],
-            ['Lixo', 'Tesouro'],
-            ['Brega', 'Chique'],
-            ['Necessidade', 'Luxo'],
-            ['Utilidade Pública', 'Desserviço'],
-            ['Causa Orgulho', 'Causa Vergonha'],
-            ['Superpoder Inútil', 'Superpoder OP'],
-            ['Dói Pouco', 'Dói Muito'],
-            ['Cheiro Bom', 'Cheiro Ruim'],
-            ['Instinto', 'Planejamento'],
-            ['Teoria', 'Prática'],
-            ['Qualidade', 'Quantidade'],
-            ['Original', 'Cópia'],
-            ['Exatas', 'Humanas'],
-            ['Arte', 'Vandalismo'],
-            ['Esporte', 'Jogo'],
-            ['Físico', 'Mental'],
-            ['Solução', 'Problema'],
-            ['Presente Ruim', 'Presente Bom'],
-            ['Sexy', 'Vulgar'],
-            ['Tabu', 'Conversa de Bar'],
-            ['Seguro', 'Perigoso'],
-            ['Conhecido', 'Desconhecido'],
-            ['Amigo', 'Inimigo'],
-            ['Mestre', 'Aprendiz'],
-            ['Vitória', 'Derrota'],
-            ['Começo', 'Fim'],
-            ['Tudo', 'Nada'],
-            ['Preto', 'Branco'], 
-            ['Ordem', 'Caos'],
-            ['Liberdade', 'Segurança'],
-            ['Democracia', 'Ditadura'],
-            ['Amor', 'Ódio'],
-            ['Vida', 'Morte'],
-            ['Deus', 'Diabo'],
-            ['Alien', 'Fantasma'],
-            ['Robô', 'Humano'],
-            ['Dinossauro', 'Dragão'],
-            ['Pirata', 'Ninja'],
-            ['Vampiro', 'Lobisomem'],
-            ['Zumbi', 'Frankenstein'],
-            ['Magia', 'Tecnologia']
+            ['Muito Cringe', 'Descolado'], ['Filme Cult', 'Blockbuster'], ['Pior sensação do mundo', 'Melhor sensação do mundo'],
+            ['Comida de Rua', 'Alta Gastronomia'], ['Fácil de aprender', 'Impossível de dominar'], ['Pessoa Tímida', 'Alma da Festa'],
+            ['Superestimado', 'Subestimado'], ['Trabalho', 'Hobby'], ['Mentira reconfortante', 'Verdade dolorosa'],
+            ['Música Ruim', 'Hino Atemporal'], ['Passado', 'Futuro'], ['Racional', 'Emocional'], ['Talento natural', 'Esforço puro'],
+            ['Moda passageira', 'Clássico'], ['Irritante', 'Adorável'], ['Ficção', 'Realidade'], ['Saboroso', 'Saudável'],
+            ['Segredo', 'Fofoca'], ['Gênio', 'Idiota'], ['Caótico', 'Organizado'], ['Introvertido', 'Extrovertido'],
+            ['Líder', 'Seguidor'], ['Otimista', 'Pessimista'], ['Egoísta', 'Altruísta'], ['Coração', 'Cérebro'],
+            ['Ingênuo', 'Malicioso'], ['Preguiçoso', 'Workaholic'], ['Humilde', 'Arrogante'], ['Corajoso', 'Covarde'],
+            ['Conservador', 'Liberal'], ['Hipster', 'Mainstream'], ['Nerd', 'Popular'], ['Matutino', 'Noturno'],
+            ['Gosta de Gatos', 'Gosta de Cachorros'], ['Paciente', 'Impulsivo'], ['Idealista', 'Realista'], ['Espiritualizado', 'Cético'],
+            ['Minimalista', 'Acumulador'], ['Aventureiro', 'Caseiro'], ['Independente', 'Carente'], ['Pontual', 'Sempre atrasado'],
+            ['Sincero', 'Falso'], ['Engraçado', 'Sério'], ['Romântico', 'Prático'], ['Sedutor', 'Assustador'],
+            ['Inocente', 'Culpado'], ['Normal', 'Estranho'], ['Confiável', 'Suspeito'], ['Duro', 'Mole'],
+            ['Seco', 'Molhado'], ['Quente', 'Frio'], ['Áspero', 'Liso'], ['Redondo', 'Quadrado'], ['Pesado', 'Leve'],
+            ['Temporário', 'Permanente'], ['Finito', 'Infinito'], ['Analógico', 'Digital'], ['Manual', 'Automático'],
+            ['Rústico', 'Futurista'], ['Sintético', 'Orgânico'], ['Colorido', 'Preto e Branco'], ['Silencioso', 'Barulhento'],
+            ['Frágil', 'Indestrutível'], ['Transparente', 'Opaco'], ['Rápido', 'Lento'], ['Afiado', 'Cego'],
+            ['Brilhante', 'Fosco'], ['Sólido', 'Líquido'], ['Puro', 'Misturado'], ['Vazio', 'Cheio'], ['Apertado', 'Folgado'],
+            ['Limpo', 'Sujo'], ['Arrumado', 'Bagunçado'], ['Claro', 'Escuro'], ['Reto', 'Curvo'], ['Simples', 'Complexo'],
+            ['Forte', 'Fraco'], ['Novo', 'Velho'], ['Star Wars', 'Star Trek'], ['Marvel', 'DC'], ['Beatles', 'Rolling Stones'],
+            ['Livro', 'Filme'], ['Série', 'Novela'], ['Comédia', 'Drama'], ['Terror', 'Romance'], ['Pop', 'Rock'],
+            ['Anos 80', 'Anos 2020'], ['Youtube', 'TikTok'], ['Playstation', 'Xbox'], ['PC Gamer', 'Console'],
+            ['Dublado', 'Legendado'], ['Herói de Ação', 'Protagonista Dramático'], ['Vilão Simpático', 'Vilão Odioso'],
+            ['Final Feliz', 'Final Triste'], ['Spoilers', 'Surpresa'], ['Original', 'Remake'], ['Avatar (Filme)', 'Avatar (Anime)'],
+            ['Disney', 'Pixar'], ['Harry Potter', 'Senhor dos Anéis'], ['Funk', 'Sertanejo'], ['Indie', 'Comercial'],
+            ['Single', 'Álbum Completo'], ['Ao vivo', 'Estúdio'], ['Reality Show', 'Documentário'], ['Influencer', 'Celebridade Real'],
+            ['Meme Velho', 'Meme Novo'], ['Textão', 'Vídeo Curto'], ['Twitter', 'Instagram'], ['Doce', 'Salgado'],
+            ['Café', 'Chá'], ['Pizza', 'Hambúrguer'], ['Cerveja', 'Vinho'], ['Chocolate', 'Baunilha'], ['Cru', 'Bem Passado'],
+            ['Apimentado', 'Suave'], ['Vegano', 'Carnívoro'], ['Caseiro', 'Industrializado'], ['Gourmet', 'Podrão'],
+            ['Café da Manhã', 'Jantar'], ['Comer com a mão', 'Usar talheres'], ['Borda Recheada', 'Sem Borda'], ['Coca-Cola', 'Pepsi'],
+            ['Nutella', 'Raiz'], ['Fruta', 'Vegetal'], ['Quente', 'Gelado'], ['Sopa é janta', 'Sopa não é janta'],
+            ['Crocante', 'Borrachudo'], ['Amargo', 'Azedo'], ['Segunda-feira', 'Sexta-feira'], ['Natal', 'Carnaval'],
+            ['Dia de Chuva', 'Dia de Sol'], ['Praia', 'Montanha'], ['Cidade', 'Campo'], ['Inverno', 'Verão'],
+            ['Banho Gelado', 'Banho Quente'], ['Acordar Cedo', 'Dormir Tarde'], ['Trânsito', 'Estrada Livre'], ['Festa', 'Netflix'],
+            ['Casamento', 'Divórcio'], ['Primeiro Encontro', 'Término'], ['Escola', 'Faculdade'], ['Chefe', 'Estagiário'],
+            ['Home Office', 'Presencial'], ['Avião', 'Navio'], ['Hotel', 'Camping'], ['Museu', 'Parque de Diversões'],
+            ['Shopping', 'Parque'], ['Elevador', 'Escada'], ['Sofá', 'Cama'], ['Solteiro', 'Namorando'], ['Criança', 'Idoso'],
+            ['Rico', 'Pobre'], ['Guerra', 'Paz'], ['Inofensivo', 'Mortal'], ['Normal ter 1', 'Estranho ter 100'],
+            ['Parece comestível', 'É comestível'], ['Acontece em filme', 'Acontece na vida real'], ['Batman', 'Coringa'],
+            ['Legal', 'Ilegal'], ['Ético', 'Imoral'], ['Justo', 'Injusto'], ['Ciência', 'Fé'], ['Sorte', 'Habilidade'],
+            ['Utopia', 'Distopia'], ['Sonho', 'Pesadelo'], ['Paraíso', 'Inferno'], ['Lixo', 'Tesouro'], ['Brega', 'Chique'],
+            ['Necessidade', 'Luxo'], ['Utilidade Pública', 'Desserviço'], ['Causa Orgulho', 'Causa Vergonha'],
+            ['Superpoder Inútil', 'Superpoder OP'], ['Dói Pouco', 'Dói Muito'], ['Cheiro Bom', 'Cheiro Ruim'],
+            ['Instinto', 'Planejamento'], ['Teoria', 'Prática'], ['Qualidade', 'Quantidade'], ['Original', 'Cópia'],
+            ['Exatas', 'Humanas'], ['Arte', 'Vandalismo'], ['Esporte', 'Jogo'], ['Físico', 'Mental'], ['Solução', 'Problema'],
+            ['Presente Ruim', 'Presente Bom'], ['Sexy', 'Vulgar'], ['Tabu', 'Conversa de Bar'], ['Seguro', 'Perigoso'],
+            ['Conhecido', 'Desconhecido'], ['Amigo', 'Inimigo'], ['Mestre', 'Aprendiz'], ['Vitória', 'Derrota'],
+            ['Começo', 'Fim'], ['Tudo', 'Nada'], ['Preto', 'Branco'], ['Ordem', 'Caos'], ['Liberdade', 'Segurança'],
+            ['Democracia', 'Ditadura'], ['Amor', 'Ódio'], ['Vida', 'Morte'], ['Deus', 'Diabo'], ['Alien', 'Fantasma'],
+            ['Robô', 'Humano'], ['Dinossauro', 'Dragão'], ['Pirata', 'Ninja'], ['Vampiro', 'Lobisomem'],
+            ['Zumbi', 'Frankenstein'], ['Magia', 'Tecnologia']
         ];
 
         let score = 0;
@@ -440,6 +298,7 @@
         const customInputArea = document.getElementById('customInputArea');
         const btnSkip = document.getElementById('btnSkip');
         const btnNextAction = document.getElementById('btnNextAction');
+        const resultCustomInputArea = document.getElementById('resultCustomInputArea');
         const tipContainer = document.getElementById('tipContainer');
         const tipText = document.getElementById('tipText');
         const btnTip = document.getElementById('btnTip');
@@ -457,7 +316,7 @@
             return rawCard;
         }
 
-        function startGame(mode) {
+        function startGame(mode, specificL, specificR) {
             currentMode = mode; 
 
             let leftText = "ESQUERDA";
@@ -472,19 +331,30 @@
                 currentCardTips = card.tips || [];
                 btnSkip.classList.remove('hidden'); 
             } else if (mode === 'custom') {
-                const cLeft = document.getElementById('customLeft').value.trim();
-                const cRight = document.getElementById('customRight').value.trim();
-                
-                if(!cLeft || !cRight) {
-                    alert("Por favor, preencha os dois campos do conceito!");
-                    return;
+                // Se foram passados argumentos (do resultado), usa eles
+                if (specificL && specificR) {
+                    leftText = specificL;
+                    rightText = specificR;
+                } else {
+                    // Senão, tenta ler do menu inicial
+                    const cLeft = document.getElementById('customLeft').value.trim();
+                    const cRight = document.getElementById('customRight').value.trim();
+                    
+                    if(!cLeft || !cRight) {
+                        alert("Por favor, preencha os dois campos do conceito!");
+                        return;
+                    }
+                    leftText = cLeft;
+                    rightText = cRight;
                 }
-                leftText = cLeft;
-                rightText = cRight;
+                
                 btnSkip.classList.add('hidden'); 
                 
+                // Limpa todos os inputs
                 document.getElementById('customLeft').value = "";
                 document.getElementById('customRight').value = "";
+                document.getElementById('nextCustomLeft').value = "";
+                document.getElementById('nextCustomRight').value = "";
             }
 
             document.getElementById('conceptLeft').innerText = leftText;
@@ -509,6 +379,17 @@
             customInputArea.classList.add('hidden'); 
             
             setGameState('medium');
+        }
+
+        function startNextCustomRound() {
+            const cLeft = document.getElementById('nextCustomLeft').value.trim();
+            const cRight = document.getElementById('nextCustomRight').value.trim();
+            
+            if(!cLeft || !cRight) {
+                alert("Por favor, preencha os dois campos para a próxima rodada!");
+                return;
+            }
+            startGame('custom', cLeft, cRight);
         }
 
         function showTip() {
@@ -549,6 +430,8 @@
             document.getElementById('screenIntro').classList.remove('hidden');
             document.getElementById('customLeft').value = "";
             document.getElementById('customRight').value = "";
+            document.getElementById('nextCustomLeft').value = "";
+            document.getElementById('nextCustomRight').value = "";
         }
 
         function setGameState(state) {
@@ -607,11 +490,13 @@
             msgEl.innerText = msg;
             msgEl.className = `font-black text-xl mb-2 ${colorClass}`;
 
-            const btn = document.getElementById('btnNextAction');
             if (currentMode === 'classic') {
-                btn.innerHTML = '<i data-lucide="refresh-cw"></i> Próxima Rodada';
+                btnNextAction.classList.remove('hidden');
+                resultCustomInputArea.classList.add('hidden');
+                btnNextAction.innerHTML = '<i data-lucide="refresh-cw"></i> Próxima Rodada';
             } else {
-                btn.innerHTML = '<i data-lucide="arrow-left"></i> Menu';
+                btnNextAction.classList.add('hidden'); 
+                resultCustomInputArea.classList.remove('hidden'); 
             }
             lucide.createIcons();
 
@@ -625,7 +510,6 @@
 
         function handleInput(clientX, clientY) {
             const rect = touchArea.getBoundingClientRect();
-            // AJUSTE PIVÔ: Voltando para a proporção original 220/230
             const pivotRatio = 220 / 230; 
             const centerX = rect.left + rect.width / 2;
             const centerY = rect.top + (rect.height * pivotRatio);
