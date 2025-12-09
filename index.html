@@ -115,8 +115,8 @@
                 <div id="conceptRight" class="text-lg md:text-2xl font-black text-slate-700 w-1/2 text-center pl-2 break-words">DIREITA</div>
             </div>
 
-            <!-- MOSTRADOR -->
-            <div class="relative w-full max-w-md mx-auto aspect-[400/230] flex items-end justify-center no-select mt-4" id="dialContainer">
+            <!-- MOSTRADOR - AUMENTADO O TAMANHO GERAL -->
+            <div class="relative w-full max-w-xl mx-auto aspect-[400/230] flex items-end justify-center no-select mt-4" id="dialContainer">
                 <svg viewBox="0 0 400 230" class="w-full h-full device-shadow overflow-visible">
                     <defs>
                         <radialGradient id="knobGradient" cx="50%" cy="50%" r="50%" fx="30%" fy="30%">
@@ -625,6 +625,7 @@
 
         function handleInput(clientX, clientY) {
             const rect = touchArea.getBoundingClientRect();
+            // AJUSTE PIVÔ: Voltando para a proporção original 220/230
             const pivotRatio = 220 / 230; 
             const centerX = rect.left + rect.width / 2;
             const centerY = rect.top + (rect.height * pivotRatio);
